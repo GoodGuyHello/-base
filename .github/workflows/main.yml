@@ -1,0 +1,32 @@
+name: Auto Sync on Merge to Main
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main  
+
+jobs:
+  sync:
+    # Only run if the PR was actually merged (not just closed)
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  
+
+      - name: Mirror to target repo
+        env:
+          TARGET_PAT: ${{ secrets.TARGET_TOKEN }}
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "actions@github.com"
+
+          # Add destination as remote
+          git remote add mirror https://x-access-token:${TARGET_PAT}@github.com/humphreydf234r/clone.git
+
+          # Push main branch only (safer than --mirror)
+          git push mirror main --force
