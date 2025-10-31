@@ -20,21 +20,21 @@ jobs:
       - name: Create destination repo if missing
         env:
           TARGET_PAT: ${{ secrets.TARGET_PAT }}
-          TARGET_USER: "woopwoop132v"          # 👈 destination GitHub username/org
-          TARGET_REPO: "cloned"                # 👈 destination repo name
+          TARGET_USER: "woopwoop132v"
+          TARGET_REPO: "cloned"
         run: |
-          echo "🔍 Checking if https://github.com/${TARGET_USER}/${TARGET_REPO} exists..."
+          echo "Checking if https://github.com/${TARGET_USER}/${TARGET_REPO} exists..."
           STATUS=$(curl -o /dev/null -w "%{http_code}" -H "Authorization: token ${TARGET_PAT}" https://api.github.com/repos/${TARGET_USER}/${TARGET_REPO})
 
           if [ "$STATUS" -eq 404 ]; then
-            echo "⚙️ Repository not found — creating it..."
+            echo "Repository not found — creating it..."
             curl -X POST -H "Authorization: token ${TARGET_PAT}" \
               -H "Accept: application/vnd.github.v3+json" \
               https://api.github.com/user/repos \
               -d "{\"name\":\"${TARGET_REPO}\", \"private\": false}"
-            echo "✅ Repository created successfully."
+            echo "Repository created successfully."
           else
-            echo "✅ Repository already exists (HTTP $STATUS)"
+            echo "Repository already exists (HTTP $STATUS)"
           fi
 
       - name: Push to destination repo
@@ -46,6 +46,5 @@ jobs:
           git config --global user.name "GitHub Action"
           git config --global user.email "actions@github.com"
 
-          # add destination as remote and push main branch
           git remote add mirror https://x-access-token:${TARGET_PAT}@github.com/${TARGET_USER}/${TARGET_REPO}.git
           git push mirror main --force
